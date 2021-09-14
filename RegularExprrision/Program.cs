@@ -18,58 +18,55 @@ namespace RegularExprrision
         {
             int Slen = S.Length;
             int Plen = pattern.Length;
-            bool[,] result = new bool[Slen, Plen];
-            result[0, 0] = true;
+            bool[,] dp = new bool[Slen+1, Plen+1];
+            dp[0, 0] = true;
 
             for (int i = 0; i < Slen; i++)
             {
                 for (int j = i; j < Plen; j++)
                 {
-                    FillResult(result, i, j);
+                    FillResult(dp, i-1, j-1, i , j);
                 }
             }
             Console.WriteLine();
             for (int i = 0; i < Plen; i++)
-                if (result[Slen - 1, i])
+                if (dp[Slen - 1, i])
                     return true;
 
             return false;
         }
 
-        public void FillResult(bool[,] result, int i, int j)
+        public void FillResult(bool[,] dp, int sIndex, int pIndex, int i, int j)
         {
 
-            if (i == 0)
+            if (p[pIndex] == '*')
             {
-                if (s[i] == p[j] || p[j] == '.')
+                if (i > 0 && (p[pIndex - 1] == s[sIndex] || p[pIndex - 1] == '.'))
                 {
-                    result[i, j] = true;
-                    return;
+                    // aa    * = 0 (dp[i, j-2])   aa   * = 1~n (dp[i - 1, j])
+                    //  a*                         a*
+                    dp[i, j] = dp[i, j - 2] || dp[i - 1, j];
                 }
-
-                if (j > 0)
+                else
                 {
-                    if((p[j] == '*' && p[j - 1] == s[i]) || p[j - 1] == '.')
-                    result[i, j] = true;
-                    return;
+                    // ab   * = 0 (dp[i, j-2])
+                    //  a*
+                    dp[i, j] = dp[i, j - 2];
                 }
-                return;
+            }
+            else if (i > 0 && p[pIndex] == '.')
+            {
+                // abc
+                // ab.
+                dp[i, j] = dp[i - 1, j - 1];
             }
             else
             {
-                if (result[i - 1, j - 1])
+                if (i > 0 && p[pIndex] == s[sIndex])
                 {
-                    if (s[i] == p[j] || p[j] == '.')
-                    {
-                        result[i, j] = true;
-                        return;
-                    }
-
-                    if (p[j] == '*' && (p[j - 1] == s[i] || p[j-1] == '.'))
-                    {
-                        result[i, j] = true;
-                        return;
-                    }
+                    // ab
+                    // ab
+                    dp[i, j] = dp[i - 1, j - 1];
                 }
             }
         }
