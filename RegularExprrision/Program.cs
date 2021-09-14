@@ -16,59 +16,57 @@ namespace RegularExprrision
 
         public bool CheckValidity(string pattern, string S)
         {
-            int Slen = S.Length;
-            int Plen = pattern.Length;
-            bool[,] dp = new bool[Slen+1, Plen+1];
+            var ns = s.Length;
+            var np = p.Length;
+
+            var dp = new bool[ns + 1, np + 1];
+
+            // init - only s: "" and p: "" => true, the other all false
             dp[0, 0] = true;
 
-            for (int i = 0; i < Slen; i++)
+            for (int i = 0; i <= ns; i++)
             {
-                for (int j = i; j < Plen; j++)
+                var sIndex = i - 1;
+                for (int j = 1; j <= np; j++)
                 {
-                    FillResult(dp, i-1, j-1, i , j);
+                    var pIndex = j - 1;
+
+                    if (p[pIndex] == '*')
+                    {
+                        if (i > 0 && (p[pIndex - 1] == s[sIndex] || p[pIndex - 1] == '.'))
+                        {
+                            // aa    * = 0 (dp[i, j-2])   aa   * = 1~n (dp[i - 1, j])
+                            //  a*                         a*
+                            dp[i, j] = dp[i, j - 2] || dp[i - 1, j];
+                        }
+                        else
+                        {
+                            // ab   * = 0 (dp[i, j-2])
+                            //  a*
+                            dp[i, j] = dp[i, j - 2];
+                        }
+                    }
+                    else if (i > 0 && p[pIndex] == '.')
+                    {
+                        // abc
+                        // ab.
+                        dp[i, j] = dp[i - 1, j - 1];
+                    }
+                    else
+                    {
+                        if (i > 0 && p[pIndex] == s[sIndex])
+                        {
+                            // ab
+                            // ab
+                            dp[i, j] = dp[i - 1, j - 1];
+                        }
+                    }
                 }
             }
-            Console.WriteLine();
-            for (int i = 0; i < Plen; i++)
-                if (dp[Slen - 1, i])
-                    return true;
 
-            return false;
+            return dp[ns, np];
         }
 
-        public void FillResult(bool[,] dp, int sIndex, int pIndex, int i, int j)
-        {
 
-            if (p[pIndex] == '*')
-            {
-                if (i > 0 && (p[pIndex - 1] == s[sIndex] || p[pIndex - 1] == '.'))
-                {
-                    // aa    * = 0 (dp[i, j-2])   aa   * = 1~n (dp[i - 1, j])
-                    //  a*                         a*
-                    dp[i, j] = dp[i, j - 2] || dp[i - 1, j];
-                }
-                else
-                {
-                    // ab   * = 0 (dp[i, j-2])
-                    //  a*
-                    dp[i, j] = dp[i, j - 2];
-                }
-            }
-            else if (i > 0 && p[pIndex] == '.')
-            {
-                // abc
-                // ab.
-                dp[i, j] = dp[i - 1, j - 1];
-            }
-            else
-            {
-                if (i > 0 && p[pIndex] == s[sIndex])
-                {
-                    // ab
-                    // ab
-                    dp[i, j] = dp[i - 1, j - 1];
-                }
-            }
-        }
     }
 }
